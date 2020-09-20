@@ -1,0 +1,17 @@
+{
+	"name": "blockchain",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"start": "nodemon --legacy-watch demo -e js api.js rs",
+		"_comment": "'nodemon --watch demo -e js api.js rs' - if drive is not mounted drive or core drive of system"
+	},
+	"author": "",
+	"license": "ISC",
+	"dependencies":{
+		"express": "4.17.1",
+		"nodemon": "2.0.4",
+		"sha256": "0.2.0"
+	}
+}
