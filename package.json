@@ -4,14 +4,19 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"start": "nodemon --legacy-watch demo -e js api.js rs",
-		"_comment": "'nodemon --watch demo -e js api.js rs' - if drive is not mounted drive or core drive of system"
+		"_comment": "'nodemon --watch blockchain -e js api.js rs' - if drive is not mounted drive or core drive of system. npm start command is used to check the regualar working/ working at single node",
+		"start": "nodemon --legacy-watch blockchain -e js api.js rs",
+		"node_1": "nodemon --legacy-watch blockchain -e js networkNode.js rs 3001 http://localhost:3001",
+		"node_2": "nodemon --legacy-watch blockchain -e js networkNode.js rs 3002 http://localhost:3002",
+		"node_3": "nodemon --legacy-watch blockchain -e js networkNode.js rs 3003 http://localhost:3003",
+		"node_4": "nodemon --legacy-watch blockchain -e js networkNode.js rs 3004 http://localhost:3004"
 	},
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
 		"body-parser": "^1.19.0",
 		"express": "4.17.1",
+		"node-fetch": "^2.6.1",
 		"nodemon": "2.0.4",
 		"sha256": "0.2.0",
 		"uuid": "^8.3.0"
