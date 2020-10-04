@@ -35,13 +35,14 @@ app.get('/mine', function(req, res){
 	const lastBlockHash = lastBlock['hash'];
 	//---- in real time more parameters need to include 
 	//---- for refrence check blockchian createNewBlock method
-	const currentBlock = {
-		transactions: bitcoin.pendingTransaction,
-		index: lastBlock['index'] + 1
-	}
+	// const currentBlock = {
+	// 	transactions: bitcoin.pendingTransaction,
+	// 	index: lastBlock['index'] + 1
+	// }
 
-	const nounce = bitcoin.proofOfWork(lastBlockHash, lastBlock);
-	const newHash = bitcoin.hashBlock(lastBlockHash, lastBlock, nounce);
+	const currentBlock = bitcoin.getHashingData(bitcoin.pendingTransaction, lastBlock['index'] + 1);
+	const nounce = bitcoin.proofOfWork(lastBlockHash, currentBlock);
+	const newHash = bitcoin.hashBlock(lastBlockHash, currentBlock, nounce);
 	const nodeAddress = newNodeAddress;
 	//bitcoin.createNewTransaction(24, '0', nodeAddress);
 	//--- Mine / Create New Block
@@ -222,6 +223,90 @@ app.post('/receive-new-block', function(req, res){
 	res.json({ note: note});
 })
 //================================ end Synchronzing Section ======================================
+
+//=================================== Consensus ==================================================
+app.get('/consensus', function(req, res){
+
+	const currentChainLength = bitcoin.chain.length;
+	let maxChainLength = currentChainLength;
+	let newLongestChain =  null;
+	let newPendingTransactions = null;
+
+	const blockchainRequest = [];
+	bitcoin.netwrokNodes.forEach(networkNodeUrl => {
+
+		const requestOption = {
+			method: 'GET',
+			headers: { 'Content-Type': 'application/json'}
+		};
+
+		// const result = fetch(networkNodeUrl + '/blockchain', requestOption);
+		// console.log("result consensus",result);
+		// blockchainRequest.push(result);
+		console.log("Network Node Url", networkNodeUrl);
+		blockchainRequest.push(fetch(networkNodeUrl + '/blockchain', requestOption)
+		.then(data=> data.json()));
+		
+		// .then(blockchain => {
+		// 	console.log("blockchain", blockchain);
+		// 	console.log("length", blockchain.chain.length);
+		// 	console.log("maxChainLength", maxChainLength);
+		// 	if(blockchain && blockchain.chain.length > maxChainLength){
+		// 		maxChainLength = requestOption;
+		// 		newLongestChain = blockchain.chain;
+		// 		newPendingTransactions = blockchain.pendingTransactions;
+		// 	}
+		// });
+
+	});
+
+	Promise.all(blockchainRequest)
+	.then(blockchains => {
+		//console.log("Each Block Chain 2", blockchains);
+		//console.log("Each Block Chain",blockchains);
+		const currentChainLength = bitcoin.chain.length;
+		let maxChainLength = currentChainLength;
+		let newLongestChain =  null;
+		let newPendingTransactions = null;
+		
+		blockchains.forEach(blockchain => {
+			
+			//console.log("blockchain ", blockchain['chain'].length);
+			if(blockchain && blockchain.chain.length > maxChainLength){
+				maxChainLength = blockchain.chain.length;
+				newLongestChain = blockchain.chain;
+				newPendingTransactions = blockchain.pendingTransactions;
+			}
+		})
+
+		// console.log("new Longest Chain", newLongestChain);
+		// console.log("is valid chain", bitcoin.chainIsValid(newLongestChain));
+
+		if(!newLongestChain && (newLongestChain && bitcoin.chainIsValid(newLongestChain))){
+			res.json({
+				note: 'Current chain is not replace',
+				chain: bitcoin.chain
+			});
+		}
+		else{
+			bitcoin.chain = newLongestChain;
+			bitcoin.pendingTransactions = newPendingTransactions;
+
+			res.json({
+				note: 'Current chain is replace',
+				chain: newLongestChain
+			});	
+		}
+	})
+	.then(data => {
+		res.end(`Consensus Done ${data}`);
+	});
+
+
+	//res.end(`Sucessfully ${bitcoin.currentNodeUrl} Synchronzed`);
+})
+//=================================== end Consensus ==============================================
+
 
 //--- Start Server ----
 app.listen(port, function(){

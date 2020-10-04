@@ -36,8 +36,8 @@ app.get('/mine', function(req, res){
 		index: lastBlock['index'] + 1
 	}
 
-	const nounce = bitcoin.proofOfWork(lastBlockHash, lastBlock);
-	const newHash = bitcoin.hashBlock(lastBlockHash, lastBlock, nounce);
+	const nounce = bitcoin.proofOfWork(lastBlockHash, currentBlock);
+	const newHash = bitcoin.hashBlock(lastBlockHash, currentBlock, nounce);
 	const nodeAddress = newNodeAddress;
 	bitcoin.createNewTransaction(24, '0', nodeAddress);
 	//--- Mine / Create New Block
